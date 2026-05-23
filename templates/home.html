@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('static/home.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center center;
+        }
+
+       
+        
+        .container {
+            max-width: 700px;
+            margin-top: 100px;
+            padding: 50px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .container h2{
+            font-family: 'Orbitron', sans-serif;
+             font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #00948f;
+            font-weight: 700;
+        }
+
+        
+        .btn-primary {
+            width: 100%;
+        }
+        
+        .navbar-brand, .nav-link {
+            font-weight: bold;
+            font-size: 25px;
+        }
+        
+        .bitcoin-description {
+            margin-top: 20px;
+            padding: 25px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+        }
+
+        .bitcoin-description h5{
+            font-size: 2.3rem;
+            text-align: center;
+            color: #860000;
+        }
+        
+        .bitcoin-description p{
+            font-size: 1.7rem;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <!-- Wallet ID Form Container -->
+    <div class="home">
+        <div class="container">
+            <h2 class="h2">Welcome to Wallet Portal</h2>
+
+            <!-- Bitcoin Description -->
+            <div class="bitcoin-description">
+                <h5>About Bitcoin</h5>
+                <p>
+                    Bitcoin is a decentralized digital currency, without a central bank or single administrator, 
+                    that can be sent from user to user on the peer-to-peer Bitcoin network without the need for intermediaries. 
+                    Transactions are verified by network nodes through cryptography and recorded in a public distributed ledger called a blockchain.
+                </p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mt-3">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

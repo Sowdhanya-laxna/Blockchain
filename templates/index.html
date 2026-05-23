@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Wallet Analysis</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00fff7;
+            --primary-dark: #006d77;
+            --secondary: #7b2cbf;
+            --dark: #0d1b2a;
+            --darker: #070f16;
+            --light: #e0e1dd;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            margin: 0;
+            padding: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background elements */
+        .cyber-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 247, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 247, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 0;
+            perspective: 500px;
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        
+        .shape {
+            position: absolute;
+            background: rgba(0, 255, 247, 0.1);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            border-radius: 10px;
+        }
+        
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            right: -150px;
+            animation: float 25s infinite ease-in-out;
+        }
+        
+        .shape-2 {
+            width: 150px;
+            height: 150px;
+            bottom: 20%;
+            left: 5%;
+            animation: float 20s infinite ease-in-out reverse;
+        }
+        
+        .shape-3 {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            left: 20%;
+            animation: float 15s infinite ease-in-out 2s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-20px, 20px) rotate(5deg); }
+            50% { transform: translate(10px, 30px) rotate(-5deg); }
+            75% { transform: translate(20px, -10px) rotate(3deg); }
+        }
+        
+        /* Main container */
+        .main-container {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            z-index: 2;
+        }
+        
+        .header-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 2.8rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--light);
+            text-shadow: 0 0 10px rgba(0, 255, 247, 0.7);
+            letter-spacing: 1px;
+        }
+        
+        .header-title span {
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+        }
+        
+        /* Card styling */
+        .wallet-card {
+            background: rgba(13, 27, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 
+                0 0 25px rgba(0, 255, 247, 0.2),
+                inset 0 0 20px rgba(0, 255, 247, 0.1);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.4s ease;
+        }
+        
+        .wallet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 10px 35px rgba(0, 255, 247, 0.3),
+                inset 0 0 20px rgba(0, 255, 247, 0.1);
+        }
+        
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: none;
+            background: transparent;
+            padding: 0;
+        }
+        
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 255, 247, 0.5);
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+        
+        .card-subtitle {
+            color: rgba(224, 225, 221, 0.7);
+            font-size: 1rem;
+            font-weight: 300;
+        }
+        
+        /* Form elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 247, 0.3);
+            background: rgba(13, 27, 42, 0.6);
+            color: var(--light);
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 255, 247, 0.3);
+            background: rgba(13, 27, 42, 0.8);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(0, 255, 247, 0.7);
+            z-index: 5;
+        }
+        
+        /* Button */
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 8px;
+            color: var(--darker);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 255, 247, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 247, 0.5);
+            color: var(--darker);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.2),
+                rgba(255, 255, 255, 0)
+            );
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .submit-btn:hover::before {
+            animation: shine 1.5s infinite;
+        }
+        
+        @keyframes shine {
+            0% { opacity: 0; top: -50%; left: -50%; }
+            50% { opacity: 1; }
+            100% { opacity: 0; top: 100%; left: 100%; }
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: none;
+            background: rgba(123, 44, 191, 0.2);
+            color: var(--light);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .alert-danger {
+            background: rgba(180, 0, 0, 0.2);
+            border-left-color: #ff3860;
+        }
+        
+        .alert-success {
+            background: rgba(0, 150, 0, 0.2);
+            border-left-color: #00d1b2;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: rgba(224, 225, 221, 0.6);
+            font-size: 0.85rem;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 2rem;
+            }
+            
+            .wallet-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .card-title {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header-title {
+                font-size: 1.7rem;
+            }
+            
+            .main-container {
+                padding: 1.5rem;
+            }
+            
+            .shape-1, .shape-2, .shape-3 {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="main-container">
+        <h1 class="header-title">BLOCKCHAIN <span>WALLET</span> ANALYSIS</h1>
+        
+        <div class="wallet-card">
+            <div class="card-header">
+                <h2 class="card-title">WALLET ID VERIFICATION</h2>
+                <p class="card-subtitle">Enter cryptocurrency wallet address for analysis</p>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="wallet_id" class="form-label">Wallet Address</label>
+                    <div class="input-group">
+                        <i class="input-icon fas fa-wallet"></i>
+                        <input type="text" class="form-control" id="wallet_id" name="wallet_id" placeholder="Enter wallet address (e.g., 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa)" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Analyze Wallet</button>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <p>Secure Blockchain Forensics &copy; 2025 | Advanced Wallet Analysis System</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add subtle interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.form-control');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (this.value === "") {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+            });
+            
+            // Add a subtle pulsing animation to the card
+            const card = document.querySelector('.wallet-card');
+            setInterval(() => {
+                card.style.boxShadow = `0 0 25px rgba(0, 255, 247, 0.3), inset 0 0 20px rgba(0, 255, 247, 0.1)`;
+                setTimeout(() => {
+                    card.style.boxShadow = `0 0 25px rgba(0, 255, 247, 0.2), inset 0 0 20px rgba(0, 255, 247, 0.1)`;
+                }, 1000);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

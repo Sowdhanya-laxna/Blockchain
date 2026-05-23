@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | Blockchain Forensics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00fff7;
+            --primary-dark: #006d77;
+            --secondary: #7b2cbf;
+            --dark: #0d1b2a;
+            --darker: #070f16;
+            --light: #e0e1dd;
+            --card-bg: rgba(13, 27, 42, 0.8);
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Navbar styling */
+        .navbar {
+            background: rgba(13, 27, 42, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 247, 0.2);
+            padding: 0.8rem 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--primary) !important;
+            text-shadow: 0 0 10px rgba(0, 255, 247, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        .nav-link {
+            color: rgba(224, 225, 221, 0.8) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary) !important;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .wallet-display {
+            background: rgba(0, 255, 247, 0.1);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            color: var(--primary);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+        
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 20px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background: var(--primary);
+            color: var(--dark);
+            box-shadow: 0 0 15px rgba(0, 255, 247, 0.5);
+        }
+        
+        /* Page content */
+        .page-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 255, 247, 0.3);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: rgba(224, 225, 221, 0.7);
+            font-size: 1.1rem;
+        }
+        
+        /* Content cards */
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0, 255, 247, 0.2);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        /* Stats summary */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(13, 27, 42, 0.6);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid rgba(0, 255, 247, 0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .stat-label {
+            color: rgba(224, 225, 221, 0.7);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Transaction table */
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .transaction-table th {
+            background: rgba(0, 255, 247, 0.1);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0, 255, 247, 0.2);
+        }
+        
+        .transaction-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .transaction-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .transaction-table tr:hover {
+            background: rgba(0, 255, 247, 0.05);
+        }
+        
+        .tx-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .tx-in {
+            background: rgba(0, 209, 178, 0.2);
+            color: #00d1b2;
+        }
+        
+        .tx-out {
+            background: rgba(255, 56, 96, 0.2);
+            color: #ff3860;
+        }
+        
+        .tx-exchange {
+            background: rgba(123, 44, 191, 0.2);
+            color: #7b2cbf;
+        }
+        
+        .tx-amount {
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .tx-date {
+            color: rgba(224, 225, 221, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .tx-address {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--light);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Graph section */
+        .graph-container {
+            height: 300px;
+            margin-top: 1rem;
+            position: relative;
+        }
+        
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-label {
+            color: rgba(224, 225, 221, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .filter-select {
+            background: rgba(13, 27, 42, 0.6);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            color: var(--light);
+            font-size: 0.9rem;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+        
+        .page-link {
+            background: rgba(13, 27, 42, 0.6);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            color: var(--light);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .page-link:hover, .page-link.active {
+            background: var(--primary);
+            color: var(--dark);
+            border-color: var(--primary);
+        }
+
+       
+        
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            color: rgba(224, 225, 221, 0.6);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .page-container {
+                padding: 1rem;
+            }
+            
+            .navbar-collapse {
+                background: rgba(13, 27, 42, 0.95);
+                padding: 1rem;
+                border-radius: 0 0 12px 12px;
+                border: 1px solid rgba(0, 255, 247, 0.2);
+                border-top: none;
+            }
+            
+            .transaction-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .wallet-display {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-wallet me-2"></i>BLOCKCHAIN FORENSICS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('summary') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('transactions') }}">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('social') }}">Social Presence</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user') }}">User Info</a>
+                    </li>
+                </ul>
+                <span class="wallet-display me-3">
+                    <i class="fas fa-wallet me-1"></i> {{ session.wallet_id[:8] }}...{{ session.wallet_id[-8:] }}
+                </span>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-container">
+        <div class="page-header">
+            <h1 class="page-title">TRANSACTION HISTORY</h1>
+            <p class="page-subtitle">Detailed view of all wallet transactions and activities</p>
+        </div>
+        
+        <!-- Stats Summary -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ wallet_info.transactions|length }}</div>
+                <div class="stat-value">127</div>
+                <div class="stat-label">Total Transactions</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">$18,240.50</div>
+                <div class="stat-label">Total Received</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">$6,342.25</div>
+                <div class="stat-label">Total Sent</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">$24,583.75</div>
+                <div class="stat-label">Current Balance</div>
+            </div>
+        </div>
+        
+       
+        
+        <!-- Transaction Table -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">Transaction Details</h2>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="transaction-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Address</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in wallet_info.transactions %}
+                        <tr>
+                            <td>
+                                {% if tx.type == 'Received' %}
+                                <span class="tx-type tx-in"><i class="fas fa-arrow-down me-1"></i> Received</span>
+                                {% elif tx.type == 'Sent' %}
+                                <span class="tx-type tx-out"><i class="fas fa-arrow-up me-1"></i> Sent</span>
+                                {% else %}
+                                <span class="tx-type tx-exchange"><i class="fas fa-exchange-alt me-1"></i> Exchange</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="tx-address">
+                                    {% if tx.type == 'Received' %}
+                                    1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2
+                                    {% elif tx.type == 'Sent' %}
+                                    3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy
+                                    {% else %}
+                                    Exchange Address
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="tx-amount {% if tx.type == 'Received' %}incoming{% elif tx.type == 'Sent' %}outgoing{% endif %}">
+                                    {% if tx.type == 'Sent' %}-{% else %}+{% endif %}{{ tx.amount }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="tx-date">{{ tx.date }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">Confirmed</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+           
+        </div>
+        
+        <!-- Transaction Graph -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">Transaction History</h2>
+            </div>
+            <img src="{{ tx_image }}" class="img-fluid" alt="Transaction Graph">
+        </div>
+        
+        <div class="page-footer">
+            <p>Blockchain Forensics Dashboard &copy; 2025 | Advanced wallet monitoring and analysis system</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple interaction for the filters
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', function() {
+                // In a real application, this would filter the transactions
+                console.log('Filter changed:', this.value);
+            });
+        });
+        
+        // Update active nav link
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

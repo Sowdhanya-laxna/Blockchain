@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Dashboard | Blockchain Forensics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #00fff7;
+            --primary-dark: #006d77;
+            --secondary: #7b2cbf;
+            --dark: #0d1b2a;
+            --darker: #070f16;
+            --light: #e0e1dd;
+            --card-bg: rgba(13, 27, 42, 0.8);
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Navbar styling */
+        .navbar {
+            background: rgba(13, 27, 42, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 247, 0.2);
+            padding: 0.8rem 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--primary) !important;
+            text-shadow: 0 0 10px rgba(0, 255, 247, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        .nav-link {
+            color: rgba(224, 225, 221, 0.8) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary) !important;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .wallet-display {
+            background: rgba(0, 255, 247, 0.1);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            color: var(--primary);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+        
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 20px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background: var(--primary);
+            color: var(--dark);
+            box-shadow: 0 0 15px rgba(0, 255, 247, 0.5);
+        }
+        
+        /* Dashboard content */
+        .dashboard-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .dashboard-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 255, 247, 0.3);
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-subtitle {
+            color: rgba(224, 225, 221, 0.7);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 255, 247, 0.15);
+            border-color: rgba(0, 255, 247, 0.4);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .stat-label {
+            color: rgba(224, 225, 221, 0.7);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Main content area */
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0, 255, 247, 0.2);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        
+        /* Graph container */
+        .graph-container {
+            height: 300px;
+            margin-top: 1rem;
+            position: relative;
+        }
+        
+        /* Transaction list */
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 255, 247, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: var(--primary);
+        }
+        
+        .transaction-details h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--light);
+        }
+        
+        .transaction-details p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: rgba(224, 225, 221, 0.7);
+        }
+        
+        .transaction-amount {
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .incoming {
+            color: #00d1b2;
+        }
+        
+        .outgoing {
+            color: #ff3860;
+        }
+        
+        /* Quick actions */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            background: rgba(0, 255, 247, 0.1);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .action-btn:hover {
+            background: rgba(0, 255, 247, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            color: var(--primary);
+        }
+        
+        .action-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        /* Time filter buttons */
+        .time-filter {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .time-btn {
+            background: rgba(0, 255, 247, 0.1);
+            border: 1px solid rgba(0, 255, 247, 0.2);
+            color: var(--light);
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .time-btn.active, .time-btn:hover {
+            background: var(--primary);
+            color: var(--dark);
+        }
+        
+        
+        /* Footer */
+        .dashboard-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            color: rgba(224, 225, 221, 0.6);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar-collapse {
+                background: rgba(13, 27, 42, 0.95);
+                padding: 1rem;
+                border-radius: 0 0 12px 12px;
+                border: 1px solid rgba(0, 255, 247, 0.2);
+                border-top: none;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .wallet-display {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.8rem;
+            }
+            
+            .time-filter {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-wallet me-2"></i>BLOCKCHAIN FORENSICS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('summary') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('transactions') }}">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('social') }}">Social Presence</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user') }}">User Info</a>
+                    </li>
+                </ul>
+                <span class="wallet-display me-3">
+                    <i class="fas fa-wallet me-1"></i> {{ session.wallet_id[:8] }}...{{ session.wallet_id[-8:] }}
+                </span>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">WALLET DASHBOARD</h1>
+            <p class="dashboard-subtitle">Comprehensive analysis and monitoring of cryptocurrency wallet activities</p>
+        </div>
+        
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-value">$24,583.75</div>
+                <div class="stat-label">Total Balance</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="stat-value">127</div>
+                <div class="stat-label">Total Transactions</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="stat-value">$18,240.50</div>
+                <div class="stat-label">Total Received</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="stat-value">$6,342.25</div>
+                <div class="stat-label">Total Sent</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Price Graph Card -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Portfolio Value</h2>
+                        <div class="time-filter">
+                            <button class="time-btn active">1D</button>
+                            <button class="time-btn">1W</button>
+                            <button class="time-btn">1M</button>
+                            <button class="time-btn">3M</button>
+                            <button class="time-btn">1Y</button>
+                        </div>
+                    </div>
+                    <div class="graph-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Transactions</h2>
+                        <a href="{{ url_for('transactions') }}" class="view-all">View All</a>
+                    </div>
+                    
+                    <div class="transaction-list">
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h4>Received from 1BvBM...PQ2Eq4</h4>
+                                    <p>Today, 14:26</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount incoming">+0.5 BTC</div>
+                        </div>
+                        
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h4>Sent to 3J98t...4Ps2</h4>
+                                    <p>Yesterday, 09:45</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount outgoing">-0.12 BTC</div>
+                        </div>
+                        
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h4>Received from bc1qxy...kg7g</h4>
+                                    <p>Oct 12, 2023</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount incoming">+1.25 BTC</div>
+                        </div>
+                        
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h4>Exchange Trade</h4>
+                                    <p>Oct 10, 2023</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount">12.8 ETH</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="right-column">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Actions</h2>
+                    </div>
+                    
+                    <div class="action-grid">
+                        <a href="{{ url_for('transactions') }}" class="action-btn">
+                            <div class="action-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <span>View Transactions</span>
+                        </a>
+                        
+                        <a href="{{ url_for('social') }}" class="action-btn">
+                            <div class="action-icon">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+                            <span>Social Analysis</span>
+                        </a>
+                        
+                        <a href="{{ url_for('user') }}" class="action-btn">
+                            <div class="action-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span>User Profile</span>
+                        </a>
+                        
+                        
+                    </div>
+                </div>
+                
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Wallet Information</h2>
+                    </div>
+                    
+                    <p><strong>Type:</strong> Bitcoin (BTC)</p>
+                    <p><strong>First Transaction:</strong> March 12, 2021</p>
+                    <p><strong>Active Period:</strong> 2 years, 7 months</p>
+                    <p><strong>Addresses:</strong> 3 associated addresses</p>
+                    <p><strong>Tags:</strong> <span class="badge bg-primary me-1">Holder</span> <span class="badge bg-info">Trader</span></p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Wallet Analysis</h2>
+                    </div>
+                    <p>Wallet risk score: <span class="badge bg-success">Low Risk</span></p>
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <p>This wallet shows typical patterns of a long-term holder with occasional trading activity. No connections to known suspicious addresses detected.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-footer">
+            <p>Blockchain Forensics Dashboard &copy; 2023 | Advanced wallet monitoring and analysis system</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize the price chart
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        
+        // Generate sample data
+        const generateData = (points, variance, trend) => {
+            const data = [];
+            let value = 20000;
+            
+            for (let i = 0; i < points; i++) {
+                value += (Math.random() * variance * 2 - variance) + trend;
+                data.push(value);
+            }
+            
+            return data;
+        };
+        
+        // Different datasets for different time periods
+        const dailyData = generateData(24, 300, 50);
+        const weeklyData = generateData(7, 800, 200);
+        const monthlyData = generateData(30, 1200, 400);
+        const threeMonthData = generateData(12, 1500, 600);
+        const yearlyData = generateData(12, 2000, 1000);
+        
+        // Labels for different time periods
+        const dailyLabels = ['12AM', '2AM', '4AM', '6AM', '8AM', '10AM', '12PM', '2PM', '4PM', '6PM', '8PM', '10PM', 
+                            '12AM', '2AM', '4AM', '6AM', '8AM', '10AM', '12PM', '2PM', '4PM', '6PM', '8PM', '10PM'];
+        
+        const weeklyLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        
+        const monthlyLabels = [];
+        for (let i = 1; i <= 30; i++) {
+            monthlyLabels.push(`Day ${i}`);
+        }
+        
+        const threeMonthLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 
+                                 'Week 7', 'Week 8', 'Week 9', 'Week 10', 'Week 11', 'Week 12'];
+        
+        const yearlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        let currentData = dailyData;
+        let currentLabels = dailyLabels;
+        
+        const priceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: currentLabels,
+                datasets: [{
+                    label: 'Portfolio Value (USD)',
+                    data: currentData,
+                    borderColor: '#00fff7',
+                    backgroundColor: 'rgba(0, 255, 247, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#00fff7',
+                    pointBorderColor: '#0d1b2a',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e1dd'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(13, 27, 42, 0.9)',
+                        titleColor: '#00fff7',
+                        bodyColor: '#e0e1dd',
+                        borderColor: 'rgba(0, 255, 247, 0.2)',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                return `$${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(224, 225, 221, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(224, 225, 221, 0.7)',
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(224, 225, 221, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(224, 225, 221, 0.7)',
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // Time filter functionality
+        document.querySelectorAll('.time-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.time-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update chart based on selected time period
+                const period = this.textContent;
+                
+                switch(period) {
+                    case '1D':
+                        currentData = dailyData;
+                        currentLabels = dailyLabels;
+                        break;
+                    case '1W':
+                        currentData = weeklyData;
+                        currentLabels = weeklyLabels;
+                        break;
+                    case '1M':
+                        currentData = monthlyData;
+                        currentLabels = monthlyLabels;
+                        break;
+                    case '3M':
+                        currentData = threeMonthData;
+                        currentLabels = threeMonthLabels;
+                        break;
+                    case '1Y':
+                        currentData = yearlyData;
+                        currentLabels = yearlyLabels;
+                        break;
+                }
+                
+                // Update chart
+                priceChart.data.labels = currentLabels;
+                priceChart.data.datasets[0].data = currentData;
+                priceChart.update();
+            });
+        });
+        
+        // Simple animation for stats cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const statCards = document.querySelectorAll('.stat-card');
+            
+            statCards.forEach((card, index) => {
+                // Add delay for staggered animation
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Update active nav link
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
